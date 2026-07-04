@@ -8,25 +8,27 @@
 </head>
 <body>
 
-    <div class="chat-header">
-        <h2>AI Assistant</h2>
-    </div>
-
-    <div class="chat-box" id="chatBox">
-        <div class="message ai-msg">
-            Hello! Ami apnar AI Assistant. How can I help you today? English e ba banglay jekono proshno korte paren.
-            <button class="voice-btn" onclick="speak('Hello! Ami apnar AI Assistant. How can I help you today?')">🔊 Listen</button>
+    <div class="main-container">
+        <div class="chat-header">
+            <h2>AI Assistant</h2>
         </div>
-    </div>
 
-    <div class="input-container">
-        <input type="text" id="userInput" placeholder="Message your AI..." onkeypress="handleEnter(event)">
-        <button onclick="sendMessage()" id="sendBtn">Send</button>
-    </div>
+        <div class="chat-box" id="chatBox">
+            <div class="message ai-msg">
+                Hello! Ami apnar AI Assistant. How can I help you today? English e ba banglay jekono proshno korte paren.
+                <button class="voice-btn" onclick="speak('Hello! Ami apnar AI Assistant. How can I help you today?')">🔊 Listen</button>
+            </div>
+        </div>
 
-    <div class="footer">
-        developed by Md. Emtiaz Hossain Sami 2026<br>
-        Dept of Software Eng, Daffodil International University
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Message your AI..." onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+
+        <div class="footer">
+            developed by Md. Emtiaz Hossain Sami 2026<br>
+            Dept of Software Eng, Daffodil International University
+        </div>
     </div>
 
     <script src="script.js"></script>
