@@ -7,7 +7,6 @@
 }
 
 
-
 body {
     height: 100vh;
     height: 100dvh;
@@ -15,9 +14,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #0c1017; 
+    background-color: #0c1017;
     background-image: url('sami.jpg');
-    background-size: contain; 
+    background-size: cover;          
     background-position: center center;
     background-repeat: no-repeat;
     position: relative;
@@ -25,15 +24,16 @@ body {
     color: #fff;
 }
 
+/* Overlay - হালকা শেড যাতে ছবি উজ্জ্বল থাকে */
 .background-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(10, 14, 23, 0.25); 
-    backdrop-filter: blur(3px);         
-    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.1); 
+    backdrop-filter: blur(1px);         
+    -webkit-backdrop-filter: blur(1px);
     z-index: 1;
 }
 
@@ -184,7 +184,7 @@ body {
     color: #ff4757;
 }
 
-/* Main Container */
+/* Main Container (গ্লাস ইফেক্ট দিয়ে স্বচ্ছ করা হলো) */
 .main-container {
     position: relative;
     z-index: 2;
@@ -194,11 +194,11 @@ body {
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    background: rgba(18, 24, 38, 0.65);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-left: 1px solid rgba(255, 255, 255, 0.12);
-    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(10, 14, 23, 0.35); /* চ্যাট বক্স হালকা স্বচ্ছ থাকবে */
+    backdrop-filter: blur(8px);        /* ব্লাড় কমায় পেছনের ছবি স্পষ্ট দেখা যাবে */
+    -webkit-backdrop-filter: blur(8px);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 @media (min-width: 851px) {
@@ -529,11 +529,11 @@ body {
     margin-top: 8px;
 }
 
-/* 📱 Mobile Specific Adjustment (Unzoomed Perfect Scale) */
+/* 📱 Mobile Specific Adjustment (Clear Background View) */
 @media (max-width: 850px) {
     body {
         background-image: url('sami.jpg');
-        background-position: center top; /* চওড়া ছবিও মোবাইলের স্ক্রিনে সুন্দরভাবে সেন্টারে ফিট হবে */
+        background-position: center top; 
         background-size: cover;
     }
 
