@@ -1,35 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sami's AI Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sami AI - Ultimate Intelligence</title>
     <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome Modern Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="chat-header">
-            <h2>AI Assistant</h2>
+    <div class="background-overlay"></div>
+
+    <!-- Sidebar / Chat History Drawer (ChatGPT style) -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fa-solid fa-sparkles"></i>
+                <span>Sami AI</span>
+            </div>
+            <button class="icon-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
+        <button class="new-chat-btn" onclick="createNewChat()">
+            <i class="fa-solid fa-plus"></i> New Chat
+        </button>
+
+        <div class="history-label">Recent Chats</div>
+        <div class="history-list" id="historyList">
+            <!-- Saved history items load here dynamically -->
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="clear-history-btn" onclick="clearAllHistory()">
+                <i class="fa-regular fa-trash-can"></i> Clear all chats
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-container">
+        <!-- Top Navbar -->
+        <header class="chat-header">
+            <button class="icon-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+            <div class="model-badge">
+                <i class="fa-solid fa-bolt"></i> Llama 3.3 70B Turbo
+            </div>
+            <button class="icon-btn" onclick="createNewChat()" title="New Chat"><i class="fa-solid fa-pen-to-square"></i></button>
+        </header>
+
+        <!-- Chat Box -->
         <div class="chat-box" id="chatBox">
-            <div class="message ai-msg">
-                Hello! I am your  AI Assistant. How can I help you today? You can ask me in English or Bengali.
-                <button class="voice-btn" onclick="speak('Hello! Ami apnar AI Assistant. How can I help you today?')">🔊 Listen</button>
+            <!-- Dynamic Messages or Welcome Screen -->
+        </div>
+
+        <!-- Input Box Section -->
+        <div class="input-wrapper">
+            <div class="input-box">
+                <input type="text" id="userInput" placeholder="Ask anything in Bangla, English or Banglish..." onkeypress="handleEnter(event)" autocomplete="off">
+                <button id="sendBtn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
+            </div>
+            <div class="footer-text">
+                Sami AI 2026 • Dept. of Software Engineering, DIU
             </div>
         </div>
-
-        <div class="input-container">
-            <input type="text" id="userInput" placeholder="Message your AI..." onkeypress="handleEnter(event)">
-            <button onclick="sendMessage()" id="sendBtn">Send</button>
-        </div>
-
-        <div class="footer">
-            Developed by Md. Emtiaz Hossain Sami 2026<br>
-            Dept of Software Engineering, Daffodil International University
-        </div>
-    </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
