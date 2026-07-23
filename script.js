@@ -1,64 +1,117 @@
-function speak(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Check if the text contains Bengali characters
-    const hasBangla = /[\u0980-\u09FF]/.test(text);
-    if (hasBangla) {
-        utterance.lang = 'bn-BD'; // Real Bangla voice output
-    } else {
-        utterance.lang = 'en-US'; // Proper English voice output
-    }
-    
-    window.speechSynthesis.speak(utterance);
-}
+// 🌟 Ultra-Powerful Multi-talented AI System Instruction
+const systemPrompt = {
+    role: "system",
+    content: "You are an intelligent AI assistant developed for Md. Emtiaz Hossain Sami. You can answer any query including programming, math, science, history, creative writing, advice, and everyday context. You seamlessly understand and reply in Bengali (বাংলা), English, and Banglish based on user input. Keep responses natural, concise, and helpful."
+};
 
-function handleEnter(e) {
-    if (e.key === 'Enter') {
+let conversationHistory = [systemPrompt];
+
+// ⌨️ HTML Inline Event Handler - Enter Key Listener
+function handleEnter(event) {
+    if (event.key === "Enter") {
         sendMessage();
     }
 }
 
+// 📩 HTML Inline Event Handler - Send Message Function
 async function sendMessage() {
-    const inputField = document.getElementById("userInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const userText = inputField.value.trim();
-    
-    if (!userText) return;
+    const userInput = document.getElementById("userInput");
+    const text = userInput.value.trim();
 
-    appendMessage("user", userText);
-    inputField.value = "";
-    sendBtn.disabled = true;
+    if (!text) return;
+
+    // Show User Message
+    appendUserMessage(text);
+    userInput.value = "";
+
+    conversationHistory.push({ role: "user", content: text });
+
+    // Show AI Loading State
+    const loadingDiv = appendAiLoadingMessage();
 
     try {
-        const response = await fetch("http://127.0.0.1:5000/chat", {
+        // 🔒 ekhane amra amader nijer backend API (/api/chat) call korchi
+        const response = await fetch("/api/chat", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: userText })
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                messages: conversationHistory
+            })
         });
-        
-        const data = await response.json();
-        appendMessage("ai", data.reply);
-    } catch (error) {
-        appendMessage("ai", "Sorry, Python server running na thakay live response pawa jacchena.");
-    }
 
-    sendBtn.disabled = false;
+        const data = await response.json();
+
+        if (data.choices && data.choices[0]) {
+            const aiReply = data.choices[0].message.content;
+            
+            // Render AI output with Listen Button
+            updateAiMessage(loadingDiv, aiReply);
+            
+            conversationHistory.push({ role: "assistant", content: aiReply });
+        } else {
+            updateAiMessage(loadingDiv, "Response pete somoshya hocche. API Key check koruk.");
+        }
+
+    } catch (error) {
+        updateAiMessage(loadingDiv, "Error: Network issue ba Server-e somoshya hocche.");
+        console.error(error);
+    }
 }
 
-function appendMessage(sender, text) {
+// User Message Creation
+function appendUserMessage(text) {
     const chatBox = document.getElementById("chatBox");
     const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${sender === 'user' ? 'user-msg' : 'ai-msg'}`;
-    
-    const formattedText = text.replace(/\n/g, "<br>");
-    const cleanTextForSpeech = text.replace(/"/g, "'").replace(/\n/g, " ");
-
-    if (sender === 'ai') {
-        msgDiv.innerHTML = `${formattedText} <button class="voice-btn" onclick="speak('${cleanTextForSpeech}')">🔊 Listen</button>`;
-    } else {
-        msgDiv.innerText = text;
-    }
-    
+    msgDiv.className = "message user-msg";
+    msgDiv.textContent = text;
     chatBox.appendChild(msgDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// AI Message Initial Loading Box Creation
+function appendAiLoadingMessage() {
+    const chatBox = document.getElementById("chatBox");
+    const msgDiv = document.createElement("div");
+    msgDiv.className = "message ai-msg";
+    msgDiv.textContent = "Thinking...";
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return msgDiv;
+}
+
+// AI Message Update with Response & Listen Button
+function updateAiMessage(element, text) {
+    element.innerHTML = "";
+    
+    const textSpan = document.createElement("span");
+    textSpan.textContent = text;
+    element.appendChild(textSpan);
+
+    const voiceBtn = document.createElement("button");
+    voiceBtn.className = "voice-btn";
+    voiceBtn.innerHTML = "🔊 Listen";
+    voiceBtn.onclick = () => speak(text);
+    element.appendChild(voiceBtn);
+
+    const chatBox = document.getElementById("chatBox");
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// 🔊 HTML Inline Event Handler - Text to Speech Function
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        const isBangla = /[\u0980-\u09FF]/.test(text);
+        
+        utterance.lang = isBangla ? 'bn-BD' : 'en-US';
+        utterance.rate = 1.0;
+        
+        window.speechSynthesis.speak(utterance);
+    } else {
+        alert("Text-to-Speech is not supported in your browser.");
+    }
 }
