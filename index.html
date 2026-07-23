@@ -12,7 +12,7 @@
 
     <div class="background-overlay"></div>
 
-    <!-- Sidebar / Chat History Drawer (ChatGPT style) -->
+    <!-- Sidebar / Chat History Drawer -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -28,9 +28,7 @@
         </button>
 
         <div class="history-label">Recent Chats</div>
-        <div class="history-list" id="historyList">
-            <!-- Saved history items load here dynamically -->
-        </div>
+        <div class="history-list" id="historyList"></div>
 
         <div class="sidebar-footer">
             <button class="clear-history-btn" onclick="clearAllHistory()">
@@ -45,20 +43,28 @@
         <header class="chat-header">
             <button class="icon-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
             <div class="model-badge">
-                <i class="fa-solid fa-bolt"></i> Llama 3.3 70B Turbo
+                <i class="fa-solid fa-bolt"></i> Llama 3.3 Turbo & Vision
             </div>
             <button class="icon-btn" onclick="createNewChat()" title="New Chat"><i class="fa-solid fa-pen-to-square"></i></button>
         </header>
 
         <!-- Chat Box -->
-        <div class="chat-box" id="chatBox">
-            <!-- Dynamic Messages or Welcome Screen -->
-        </div>
+        <div class="chat-box" id="chatBox"></div>
 
         <!-- Input Box Section -->
         <div class="input-wrapper">
+            <!-- File/Image Preview Chip -->
+            <div class="file-preview-container" id="filePreviewContainer" style="display: none;"></div>
+
             <div class="input-box">
-                <input type="text" id="userInput" placeholder="Ask anything in Bangla, English or Banglish..." onkeypress="handleEnter(event)" autocomplete="off">
+                <!-- Hidden File Input -->
+                <input type="file" id="fileInput" onchange="handleFileSelect(event)" accept="image/*,.txt,.js,.py,.html,.css,.json,.csv,.md" style="display: none;">
+                
+                <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach image or file">
+                    <i class="fa-solid fa-paperclip"></i>
+                </button>
+
+                <input type="text" id="userInput" placeholder="Ask or upload image/file..." onkeypress="handleEnter(event)" autocomplete="off">
                 <button id="sendBtn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
             </div>
             <div class="footer-text">
