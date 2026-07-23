@@ -13,12 +13,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* 🌟 ইমেজ না পেলেও যাতে ৩ নম্বর ছবির মতো ডার্ক এম্বিয়েন্ট গ্লো থাকে */
     background-color: #0c1017;
     background-image: 
         radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.12) 0%, transparent 40%),
         radial-gradient(circle at 85% 80%, rgba(0, 114, 255, 0.12) 0%, transparent 40%),
-        url('627058011_915956991347956_7122116475994450660_n.jpg'); 
+        url('bg.jpg'); 
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -26,7 +25,6 @@ body {
     overflow: hidden;
     color: #fff;
 }
-
 .background-overlay {
     position: absolute;
     top: 0;
