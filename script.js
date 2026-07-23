@@ -1,18 +1,17 @@
-// 🌟 Modern All-Rounder AI System Instruction
 const systemPrompt = {
     role: "system",
-    content: "You are Sami AI, a state-of-the-art AI assistant. You can handle any topic seamlessly—including programming, math, science, writing, history, and general conversations. You fluidly respond in Bengali (বাংলা), English, and Banglish based on user preference. Give well-structured, intelligent, and clean answers."
+    content: "You are Sami AI, an intelligent, modern AI assistant. You support standard conversation, programming, image analysis, and document reading. Respond fluently in Bangla, English, or Banglish based on user preference."
 };
 
 let currentChatId = null;
 let conversationHistory = [];
+let attachedFile = null; // { type: 'image'|'text', data: '...', name: '...' }
 
 document.addEventListener("DOMContentLoaded", () => {
     renderHistoryList();
     loadNewOrLastChat();
 });
 
-// Sidebar Toggle Function
 function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
     const backdrop = document.getElementById("sidebarBackdrop");
@@ -20,9 +19,69 @@ function toggleSidebar() {
     backdrop.style.display = sidebar.classList.contains("active") ? "block" : "none";
 }
 
-// Enter Key Listener
 function handleEnter(event) {
     if (event.key === "Enter") sendMessage();
+}
+
+// 📎 File / Image Upload Handling
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    if (file.type.startsWith("image/")) {
+        reader.onload = (e) => {
+            attachedFile = {
+                type: "image",
+                data: e.target.result,
+                name: file.name
+            };
+            showFilePreview();
+        };
+        reader.readAsDataURL(file);
+    } else {
+        reader.onload = (e) => {
+            attachedFile = {
+                type: "text",
+                data: e.target.result,
+                name: file.name
+            };
+            showFilePreview();
+        };
+        reader.readAsText(file);
+    }
+}
+
+function showFilePreview() {
+    const container = document.getElementById("filePreviewContainer");
+    container.style.display = "flex";
+
+    if (attachedFile.type === "image") {
+        container.innerHTML = `
+            <div class="file-chip">
+                <img src="${attachedFile.data}" alt="Preview">
+                <span>${attachedFile.name}</span>
+                <i class="fa-solid fa-xmark remove-file-btn" onclick="clearAttachedFile()"></i>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="file-chip">
+                <i class="fa-solid fa-file-code"></i>
+                <span>${attachedFile.name}</span>
+                <i class="fa-solid fa-xmark remove-file-btn" onclick="clearAttachedFile()"></i>
+            </div>
+        `;
+    }
+}
+
+function clearAttachedFile() {
+    attachedFile = null;
+    document.getElementById("fileInput").value = "";
+    const container = document.getElementById("filePreviewContainer");
+    container.style.display = "none";
+    container.innerHTML = "";
 }
 
 // 📩 Send Message
@@ -30,53 +89,74 @@ async function sendMessage(customText = null) {
     const userInput = document.getElementById("userInput");
     const text = customText || userInput.value.trim();
 
-    if (!text) return;
+    if (!text && !attachedFile) return;
 
     if (!currentChatId) {
         currentChatId = Date.now().toString();
         conversationHistory = [systemPrompt];
     }
 
-    // Hide welcome screen if active
     removeWelcomeScreen();
 
-    // Render User Message
-    appendMessage("user", text);
+    let userMessageContent = text;
+    let apiMessageContent = text;
+    let hasImage = false;
+
+    // Process attached file/image
+    if (attachedFile) {
+        if (attachedFile.type === "image") {
+            hasImage = true;
+            apiMessageContent = [
+                { type: "text", text: text || "What is in this image?" },
+                { type: "image_url", image_url: { url: attachedFile.data } }
+            ];
+            userMessageContent = { text: text, img: attachedFile.data };
+        } else if (attachedFile.type === "text") {
+            const fileText = `\n\n[Attached File: ${attachedFile.name}]\n\`\`\`\n${attachedFile.data}\n\`\`\``;
+            apiMessageContent = (text || "Analyze this file:") + fileText;
+            userMessageContent = (text ? text + " " : "") + `📄 [File: ${attachedFile.name}]`;
+        }
+    }
+
+    // Render User Message in Chat
+    appendUserMessage(userMessageContent);
+
     userInput.value = "";
+    clearAttachedFile();
 
-    conversationHistory.push({ role: "user", content: text });
+    // Store in API conversation array
+    conversationHistory.push({ role: "user", content: apiMessageContent });
 
-    // AI Thinking indicator
     const loadingDiv = appendLoadingState();
 
     try {
         const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: conversationHistory })
+            body: JSON.stringify({
+                messages: conversationHistory,
+                hasImage: hasImage
+            })
         });
 
         const data = await response.json();
 
         if (data.choices && data.choices[0]) {
             const aiReply = data.choices[0].message.content;
-            
             updateAiMessage(loadingDiv, aiReply);
             conversationHistory.push({ role: "assistant", content: aiReply });
-
-            // Save to LocalStorage History
             saveChatHistory();
         } else {
-            updateAiMessage(loadingDiv, "Response error. Please check your setup.");
+            updateAiMessage(loadingDiv, "Response error. Please check Groq API setup.");
         }
 
     } catch (error) {
-        updateAiMessage(loadingDiv, "Error: Network problem or Vercel server issue.");
+        updateAiMessage(loadingDiv, "Error connecting to server.");
         console.error(error);
     }
 }
 
-// 🎨 UI Rendering Helpers
+// UI Helpers
 function removeWelcomeScreen() {
     const welcome = document.querySelector(".welcome-screen");
     if (welcome) welcome.remove();
@@ -88,7 +168,7 @@ function showWelcomeScreen() {
         <div class="welcome-screen">
             <i class="fa-solid fa-brain"></i>
             <h1>What can I help with today?</h1>
-            <p>Ask anything in Bangla, English, or Banglish.</p>
+            <p>Ask questions, analyze images, or review code files.</p>
 
             <div class="suggestion-chips">
                 <div class="chip" onclick="sendMessage('Write a JavaScript function for array sorting')">💻 Write Code</div>
@@ -100,30 +180,40 @@ function showWelcomeScreen() {
     `;
 }
 
-function appendMessage(role, text) {
+function appendUserMessage(content) {
     const chatBox = document.getElementById("chatBox");
-
     const row = document.createElement("div");
-    row.className = `message-row ${role}`;
+    row.className = "message-row user";
 
     const avatar = document.createElement("div");
     avatar.className = "avatar";
-    avatar.innerHTML = role === "user" ? `<i class="fa-solid fa-user"></i>` : `<i class="fa-solid fa-robot"></i>`;
+    avatar.innerHTML = `<i class="fa-solid fa-user"></i>`;
 
-    const content = document.createElement("div");
-    content.className = "message-content";
-    content.textContent = text;
+    const msgContent = document.createElement("div");
+    msgContent.className = "message-content";
+
+    if (typeof content === "object" && content.img) {
+        if (content.text) {
+            const p = document.createElement("p");
+            p.textContent = content.text;
+            msgContent.appendChild(p);
+        }
+        const img = document.createElement("img");
+        img.src = content.img;
+        img.className = "msg-img-preview";
+        msgContent.prepend(img);
+    } else {
+        msgContent.textContent = content;
+    }
 
     row.appendChild(avatar);
-    row.appendChild(content);
-
+    row.appendChild(msgContent);
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function appendLoadingState() {
     const chatBox = document.getElementById("chatBox");
-
     const row = document.createElement("div");
     row.className = "message-row ai";
 
@@ -137,7 +227,6 @@ function appendLoadingState() {
 
     row.appendChild(avatar);
     row.appendChild(content);
-
     chatBox.appendChild(row);
     chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -146,12 +235,10 @@ function appendLoadingState() {
 
 function updateAiMessage(element, text) {
     element.innerHTML = "";
-    
     const textSpan = document.createElement("span");
     textSpan.textContent = text;
     element.appendChild(textSpan);
 
-    // Action Buttons (Copy & Speech)
     const actions = document.createElement("div");
     actions.className = "message-actions";
 
@@ -177,7 +264,6 @@ function updateAiMessage(element, text) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 🔊 Text-To-Speech
 function speak(text) {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -189,15 +275,22 @@ function speak(text) {
     }
 }
 
-// 📁 LOCAL STORAGE HISTORY SYSTEM
+// Local Storage History System
 function saveChatHistory() {
     let allChats = JSON.parse(localStorage.getItem("sami_pro_chats") || "{}");
     
-    let firstUserMsg = conversationHistory.find(m => m.role === "user")?.content || "New Conversation";
+    let firstMsg = conversationHistory.find(m => m.role === "user")?.content;
+    let title = "New Conversation";
+
+    if (typeof firstMsg === "string") {
+        title = firstMsg.substring(0, 30);
+    } else if (Array.isArray(firstMsg)) {
+        title = "📷 Image Analysis";
+    }
 
     allChats[currentChatId] = {
         id: currentChatId,
-        title: firstUserMsg,
+        title: title,
         history: conversationHistory
     };
 
@@ -248,7 +341,7 @@ function loadChatHistory(id) {
 
     conversationHistory.forEach(msg => {
         if (msg.role === "user") {
-            appendMessage("user", msg.content);
+            appendUserMessage(msg.content);
         } else if (msg.role === "assistant") {
             const row = document.createElement("div");
             row.className = "message-row ai";
@@ -270,6 +363,7 @@ function loadChatHistory(id) {
 function createNewChat() {
     currentChatId = null;
     conversationHistory = [];
+    clearAttachedFile();
 
     const chatBox = document.getElementById("chatBox");
     chatBox.innerHTML = "";
