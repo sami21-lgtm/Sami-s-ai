@@ -1,141 +1,209 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Full screen background image setup */
-    background: url('627058011_915956991347956_7122116475994450660_n.jpg') no-repeat center center fixed;
-    background-size: cover;
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    height: 100vh;
+    height: 100dvh; /* Mobile browser height fix */
+    width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    
+    /* 🔻 APNAR BACKGROUND IMAGE LINK EKHANE DIN 🔻 */
+    background-image: url('your-background.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
     overflow: hidden;
 }
 
-/* Glassmorphic Container for UI Layout */
-.main-container {
-    display: flex;
-    flex-direction: column;
+/* Background Dimming Layer */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100vh;
-    background: rgba(18, 18, 18, 0.7); /* Semi-transparent dark overlay over picture */
-    backdrop-filter: blur(10px); /* Blurs the background image smoothly */
-    -webkit-backdrop-filter: blur(10px);
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
 }
 
-/* Laptop/Desktop screen e app er moto look dibe, mobile e response korbe */
-@media (min-width: 768px) {
+/* Main App Layout */
+.main-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Desktop Glass Container Styling */
+@media (min-width: 501px) {
     .main-container {
-        width: 460px;
-        height: 85vh;
+        height: 90vh;
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
     }
 }
 
+/* Header */
 .chat-header {
-    background: rgba(30, 30, 30, 0.4);
-    padding: 15px;
-    text-align: center;
+    padding: 18px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    color: #ffffff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
 }
 
-.chat-header h2 { margin: 0; font-size: 1.5rem; color: #4da6ff; }
+.chat-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
 
+/* Chat Box */
 .chat-box {
     flex: 1;
-    padding: 20px;
+    padding: 16px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
+    scroll-behavior: smooth;
 }
 
-/* Chat bubble styling with soft transparency */
+.chat-box::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Messages */
 .message {
-    max-width: 80%;
-    padding: 12px 18px;
-    border-radius: 15px;
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.95rem;
     line-height: 1.5;
-    font-size: 1rem;
-    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .user-msg {
     align-self: flex-end;
-    background: rgba(0, 91, 181, 0.85);
-    color: white;
-    border-bottom-right-radius: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
 }
 
 .ai-msg {
     align-self: flex-start;
-    background: rgba(42, 42, 42, 0.75);
-    color: white;
-    border-bottom-left-radius: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.92);
+    color: #1e1e1e;
+    border-bottom-left-radius: 4px;
 }
 
+/* Voice Listen Button */
 .voice-btn {
-    background: none;
+    align-self: flex-start;
+    padding: 4px 10px;
+    font-size: 0.75rem;
     border: none;
-    color: #4da6ff;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.08);
+    color: #333;
     cursor: pointer;
-    font-size: 0.8rem;
-    margin-top: 8px;
+    transition: 0.2s;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    margin-top: 4px;
 }
 
-.voice-btn:hover { text-decoration: underline; }
+.voice-btn:hover {
+    background: rgba(0, 0, 0, 0.18);
+}
 
+.voice-btn:active {
+    transform: scale(0.95);
+}
+
+/* Input Container */
 .input-container {
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.35);
     display: flex;
-    padding: 15px;
-    background: rgba(30, 30, 30, 0.4);
+    gap: 10px;
+    align-items: center;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .input-container input {
     flex: 1;
+    padding: 12px 16px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.input-container input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.input-container button#sendBtn {
     padding: 12px 20px;
     border-radius: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(51, 51, 51, 0.5);
-    color: white;
-    font-size: 1rem;
-    outline: none;
-}
-
-.input-container button {
-    background-color: #4da6ff;
-    color: white;
     border: none;
-    padding: 10px 25px;
-    margin-left: 10px;
-    border-radius: 25px;
+    background: #a777e3;
+    color: white;
+    font-weight: 600;
     cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
+    transition: 0.2s;
 }
 
-.input-container button:hover { background-color: #3388cc; }
-.input-container button:disabled { background-color: #555; cursor: not-allowed; }
+.input-container button#sendBtn:hover {
+    background: #6e8efb;
+}
 
+.input-container button#sendBtn:active {
+    transform: scale(0.95);
+}
+
+/* Footer */
 .footer {
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.7rem;
     text-align: center;
-    padding: 10px;
-    font-size: 0.75rem;
-    background: rgba(18, 18, 18, 0.6);
-    color: #ddd;
     line-height: 1.4;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-@media (max-width: 600px) {
-    .message { max-width: 90%; }
-    .input-container input { font-size: 0.9rem; }
 }
