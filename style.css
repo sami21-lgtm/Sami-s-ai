@@ -6,6 +6,7 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* 🌟 PC & Laptop Background (Perfect Fit) */
 body {
     height: 100vh;
     height: 100dvh;
@@ -14,12 +15,9 @@ body {
     justify-content: center;
     align-items: center;
     background-color: #0c1017;
-    background-image: 
-        radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 85% 80%, rgba(0, 114, 255, 0.12) 0%, transparent 40%),
-        url('sami.jpg');
+    background-image: url('sami.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: center center; /* পিসি ও ল্যাপটপে ছবি একদম সেন্টারে ফিট থাকবে */
     background-repeat: no-repeat;
     position: relative;
     overflow: hidden;
@@ -530,22 +528,22 @@ body {
     margin-top: 8px;
 }
 
-/* 📱 MOBILE FIX: Clear Picture Display on Mobile Devices */
+/* 📱 Mobile Specific Adjustment (Unzoomed Perfect Scale) */
 @media (max-width: 850px) {
     body {
         background-image: url('sami.jpg');
-        background-position: center;
+        background-position: center top; /* চওড়া ছবিও মোবাইলের স্ক্রিনে সুন্দরভাবে সেন্টারে ফিট হবে */
         background-size: cover;
     }
 
     .background-overlay {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(0, 0, 0, 0.08);
         backdrop-filter: blur(0px);
         -webkit-backdrop-filter: blur(0px);
     }
 
     .main-container {
-        background: rgba(10, 14, 23, 0.35);
+        background: rgba(10, 14, 23, 0.38);
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
     }
