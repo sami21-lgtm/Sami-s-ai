@@ -17,7 +17,7 @@ body {
     background-image: 
         radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.12) 0%, transparent 40%),
         radial-gradient(circle at 85% 80%, rgba(0, 114, 255, 0.12) 0%, transparent 40%),
-        url('sami.jpg'); 
+        url('bg.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -25,6 +25,7 @@ body {
     overflow: hidden;
     color: #fff;
 }
+
 .background-overlay {
     position: absolute;
     top: 0;
@@ -37,7 +38,7 @@ body {
     z-index: 1;
 }
 
-/* 🌟 Sidebar Glassmorphism */
+/* Sidebar Glassmorphism */
 .sidebar-backdrop {
     position: fixed;
     top: 0;
@@ -184,7 +185,7 @@ body {
     color: #ff4757;
 }
 
-/* 🌟 Main App Layout (Exact Glass Finish as Pic 3) */
+/* Main Container */
 .main-container {
     position: relative;
     z-index: 2;
@@ -252,7 +253,7 @@ body {
     font-weight: 500;
 }
 
-/* 🌟 Chat Container & Welcome Cards */
+/* Chat Box */
 .chat-box {
     flex: 1;
     padding: 20px;
@@ -328,7 +329,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* 🌟 Chat Bubbles */
+/* Chat Messages & Attachments */
 .message-row {
     display: flex;
     gap: 12px;
@@ -386,6 +387,14 @@ body {
     border-top-left-radius: 4px;
 }
 
+.msg-img-preview {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    display: block;
+}
+
 .message-actions {
     display: flex;
     gap: 8px;
@@ -408,11 +417,42 @@ body {
     color: #000;
 }
 
-/* 🌟 Input Wrapper */
+/* Input Area & File Attachment */
 .input-wrapper {
-    padding: 15px 20px;
+    padding: 12px 20px 15px 20px;
     background: rgba(0, 0, 0, 0.2);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.file-preview-container {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 242, 254, 0.15);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    color: #00f2fe;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.file-chip img {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.file-chip .remove-file-btn {
+    cursor: pointer;
+    color: #ff4757;
+    margin-left: 4px;
 }
 
 .input-box {
@@ -421,13 +461,33 @@ body {
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 30px;
-    padding: 6px 8px 6px 18px;
+    padding: 6px 8px 6px 12px;
     transition: 0.2s;
 }
 
 .input-box:focus-within {
     border-color: #00f2fe;
     box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+}
+
+.attach-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.attach-btn:hover {
+    color: #00f2fe;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .input-box input {
@@ -437,6 +497,7 @@ body {
     outline: none;
     color: #fff;
     font-size: 0.95rem;
+    padding: 0 10px;
 }
 
 .input-box input::placeholder {
@@ -466,5 +527,5 @@ body {
     text-align: center;
     font-size: 0.68rem;
     color: rgba(255, 255, 255, 0.4);
-    margin-top: 10px;
+    margin-top: 8px;
 }
