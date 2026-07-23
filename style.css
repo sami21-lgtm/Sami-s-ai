@@ -529,3 +529,29 @@ body {
     color: rgba(255, 255, 255, 0.4);
     margin-top: 8px;
 }
+
+/* 📱 MOBILE FIX: Clear Picture Display on Mobile Devices */
+@media (max-width: 850px) {
+    body {
+        background-image: url('sami.jpg');
+        background-position: center;
+        background-size: cover;
+    }
+
+    .background-overlay {
+        background: rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+
+    .main-container {
+        background: rgba(10, 14, 23, 0.35);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    .chip {
+        background: rgba(15, 20, 30, 0.65);
+        backdrop-filter: blur(10px);
+    }
+}
