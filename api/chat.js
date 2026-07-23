@@ -1,18 +1,20 @@
 export default async function handler(req, res) {
-    // শুধুমাত্র POST রিকোয়েস্ট অ্যালাউ করা হচ্ছে
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
-        const { messages } = req.body;
-
-        // Vercel Environment Variable থেকে সিকিউরভাবে API Key নেওয়া হচ্ছে
+        const { messages, hasImage } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) {
             return res.status(500).json({ error: "Groq API Key set kora hoyni!" });
         }
+
+        
+        const model = hasImage 
+            ? "llama-3.2-11b-vision-instruct" 
+            : "llama-3.3-70b-versatile";
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -21,7 +23,7 @@ export default async function handler(req, res) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: model,
                 messages: messages,
                 temperature: 0.7
             })
