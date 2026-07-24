@@ -1,11 +1,11 @@
 const systemPrompt = {
     role: "system",
-    content: "You are Sami AI, an intelligent, modern AI assistant. You support standard conversation, programming, image analysis, and document reading. Respond fluently in Bangla, English, or Banglish based on user preference."
+    content: "You are Sami AI, an advanced, highly intelligent AI assistant (similar to ChatGPT and Gemini). You excel in standard conversation, coding, highly detailed image analysis, document comprehension (PDF, Word, PowerPoint, Text), and creating detailed prompts. Respond fluently in Bangla, English, or Banglish based on user preference. Keep your explanations clear, structured, and easy to understand."
 };
 
 let currentChatId = null;
 let conversationHistory = [];
-let attachedFile = null; // { type: 'image'|'text', data: '...', name: '...' }
+let attachedFile = null; // { type: 'image'|'text'|'document', data: '...', name: '...', ext: '...' }
 
 document.addEventListener("DOMContentLoaded", () => {
     renderHistoryList();
@@ -23,39 +23,141 @@ function handleEnter(event) {
     if (event.key === "Enter") sendMessage();
 }
 
-// 📎 File / Image Upload Handling
-function handleFileSelect(event) {
+// 🌐 Dynamic CDN Script Loader Helper
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+            resolve();
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+        document.head.appendChild(script);
+    });
+}
+
+// 📎 File / Image / PDF / DOCX / PPTX Handling
+async function handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    const fileName = file.name.toLowerCase();
+    const container = document.getElementById("filePreviewContainer");
+    container.style.display = "flex";
+    container.innerHTML = `<div class="file-chip"><i class="fa-solid fa-spinner fa-spin"></i> Reading ${file.name}...</div>`;
 
-    if (file.type.startsWith("image/")) {
-        reader.onload = (e) => {
+    try {
+        // 1. Image Files
+        if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                attachedFile = {
+                    type: "image",
+                    data: e.target.result,
+                    name: file.name,
+                    ext: "img"
+                };
+                showFilePreview();
+            };
+            reader.readAsDataURL(file);
+        } 
+        // 2. PDF Files
+        else if (fileName.endsWith(".pdf") || file.type === "application/pdf") {
+            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = "";
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(" ");
+                fullText += `\n--- Page ${i} ---\n${pageText}\n`;
+            }
+
             attachedFile = {
-                type: "image",
-                data: e.target.result,
-                name: file.name
+                type: "document",
+                data: fullText || "No readable text found in PDF.",
+                name: file.name,
+                ext: "pdf"
             };
             showFilePreview();
-        };
-        reader.readAsDataURL(file);
-    } else {
-        reader.onload = (e) => {
+        } 
+        // 3. Word Document (.docx)
+        else if (fileName.endsWith(".docx")) {
+            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+
             attachedFile = {
-                type: "text",
-                data: e.target.result,
-                name: file.name
+                type: "document",
+                data: result.value || "No text found in Word document.",
+                name: file.name,
+                ext: "docx"
             };
             showFilePreview();
-        };
-        reader.readAsText(file);
+        } 
+        // 4. PowerPoint Presentation (.pptx)
+        else if (fileName.endsWith(".pptx")) {
+            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
+            const arrayBuffer = await file.arrayBuffer();
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            let fullText = "";
+            let slideNum = 1;
+
+            for (let filename in zip.files) {
+                if (filename.startsWith("ppt/slides/slide") && filename.endsWith(".xml")) {
+                    const xmlText = await zip.files[filename].async("string");
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                    const textNodes = xmlDoc.getElementsByTagName("a:t");
+                    let slideText = Array.from(textNodes).map(node => node.textContent).join(" ");
+                    fullText += `\n--- Slide ${slideNum} ---\n${slideText}\n`;
+                    slideNum++;
+                }
+            }
+
+            attachedFile = {
+                type: "document",
+                data: fullText || "No readable text found in presentation slides.",
+                name: file.name,
+                ext: "pptx"
+            };
+            showFilePreview();
+        } 
+        // 5. Plain Text / Code / Other Documents
+        else {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                attachedFile = {
+                    type: "text",
+                    data: e.target.result,
+                    name: file.name,
+                    ext: "txt"
+                };
+                showFilePreview();
+            };
+            reader.readAsText(file);
+        }
+    } catch (err) {
+        console.error("File reading error:", err);
+        alert("Failed to read the file. Please try another file.");
+        clearAttachedFile();
     }
 }
 
 function showFilePreview() {
     const container = document.getElementById("filePreviewContainer");
     container.style.display = "flex";
+
+    let iconClass = "fa-file-lines";
+    if (attachedFile.ext === "pdf") iconClass = "fa-file-pdf";
+    else if (attachedFile.ext === "docx") iconClass = "fa-file-word";
+    else if (attachedFile.ext === "pptx") iconClass = "fa-file-powerpoint";
 
     if (attachedFile.type === "image") {
         container.innerHTML = `
@@ -68,7 +170,7 @@ function showFilePreview() {
     } else {
         container.innerHTML = `
             <div class="file-chip">
-                <i class="fa-solid fa-file-code"></i>
+                <i class="fa-solid ${iconClass}"></i>
                 <span>${attachedFile.name}</span>
                 <i class="fa-solid fa-xmark remove-file-btn" onclick="clearAttachedFile()"></i>
             </div>
@@ -107,13 +209,13 @@ async function sendMessage(customText = null) {
         if (attachedFile.type === "image") {
             hasImage = true;
             apiMessageContent = [
-                { type: "text", text: text || "What is in this image?" },
+                { type: "text", text: text || "Analyze this image in detail and describe what you see." },
                 { type: "image_url", image_url: { url: attachedFile.data } }
             ];
             userMessageContent = { text: text, img: attachedFile.data };
-        } else if (attachedFile.type === "text") {
-            const fileText = `\n\n[Attached File: ${attachedFile.name}]\n\`\`\`\n${attachedFile.data}\n\`\`\``;
-            apiMessageContent = (text || "Analyze this file:") + fileText;
+        } else if (attachedFile.type === "document" || attachedFile.type === "text") {
+            const documentPrompt = `\n\n[📄 Attached Document (${attachedFile.name}) Content]:\n\`\`\`\n${attachedFile.data}\n\`\`\``;
+            apiMessageContent = (text || "Analyze and summarize the contents of this document in detail:") + documentPrompt;
             userMessageContent = (text ? text + " " : "") + `📄 [File: ${attachedFile.name}]`;
         }
     }
@@ -147,7 +249,7 @@ async function sendMessage(customText = null) {
             conversationHistory.push({ role: "assistant", content: aiReply });
             saveChatHistory();
         } else {
-            updateAiMessage(loadingDiv, "Response error. Please check Groq API setup.");
+            updateAiMessage(loadingDiv, "Response error. Please check your API setup.");
         }
 
     } catch (error) {
@@ -168,12 +270,12 @@ function showWelcomeScreen() {
         <div class="welcome-screen">
             <i class="fa-solid fa-brain"></i>
             <h1>What can I help with today?</h1>
-            <p>Ask questions, analyze images, or review code files.</p>
+            <p>Ask questions, analyze images, or review PDF/Word/PPTX files.</p>
 
             <div class="suggestion-chips">
                 <div class="chip" onclick="sendMessage('Write a JavaScript function for array sorting')">💻 Write Code</div>
                 <div class="chip" onclick="sendMessage('Explain Quantum Physics in simple terms')">⚛️ Explain Science</div>
-                <div class="chip" onclick="sendMessage('আমাকে একটি সুন্দর প্রফেশনাল সিভির ডেমো বানিয়ে দাও')">📄 Create CV Sample</div>
+                <div class="chip" onclick="sendMessage('আমাকে একটি সুন্দর প্রফেশনাল সিভির ডেমো বানিয়ে দাও')">📄 Create CV Sample</div>
                 <div class="chip" onclick="sendMessage('Kivabe Web Development shuru korbo?')">🚀 Career Guide</div>
             </div>
         </div>
@@ -235,9 +337,15 @@ function appendLoadingState() {
 
 function updateAiMessage(element, text) {
     element.innerHTML = "";
-    const textSpan = document.createElement("span");
-    textSpan.textContent = text;
-    element.appendChild(textSpan);
+    
+    // Check if 'marked' markdown parser is available
+    if (window.marked) {
+        element.innerHTML = marked.parse(text);
+    } else {
+        const textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        element.appendChild(textSpan);
+    }
 
     const actions = document.createElement("div");
     actions.className = "message-actions";
@@ -267,8 +375,10 @@ function updateAiMessage(element, text) {
 function speak(text) {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        const isBangla = /[\u0980-\u09FF]/.test(text);
+        // Remove markdown tags for smoother speech
+        const cleanText = text.replace(/[*_#`~]/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        const isBangla = /[\u0980-\u09FF]/.test(cleanText);
         utterance.lang = isBangla ? 'bn-BD' : 'en-US';
         utterance.rate = 1.0;
         window.speechSynthesis.speak(utterance);
@@ -300,6 +410,7 @@ function saveChatHistory() {
 
 function renderHistoryList() {
     const historyList = document.getElementById("historyList");
+    if (!historyList) return;
     historyList.innerHTML = "";
 
     let allChats = JSON.parse(localStorage.getItem("sami_pro_chats") || "{}");
@@ -355,7 +466,7 @@ function loadChatHistory(id) {
     });
 
     renderHistoryList();
-    if (document.getElementById("sidebar").classList.contains("active")) {
+    if (document.getElementById("sidebar")?.classList.contains("active")) {
         toggleSidebar();
     }
 }
@@ -371,7 +482,7 @@ function createNewChat() {
 
     renderHistoryList();
 
-    if (document.getElementById("sidebar").classList.contains("active")) {
+    if (document.getElementById("sidebar")?.classList.contains("active")) {
         toggleSidebar();
     }
 }
