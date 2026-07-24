@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sami AI - Ultimate Intelligence</title>
     <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome Modern Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 
     <div class="background-overlay"></div>
 
-    <!-- Sidebar / Chat History Drawer -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -37,9 +36,7 @@
         </div>
     </aside>
 
-    <!-- Main Workspace -->
     <main class="main-container">
-        <!-- Top Navbar -->
         <header class="chat-header">
             <button class="icon-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
             <div class="model-badge">
@@ -48,17 +45,13 @@
             <button class="icon-btn" onclick="createNewChat()" title="New Chat"><i class="fa-solid fa-pen-to-square"></i></button>
         </header>
 
-        <!-- Chat Box -->
         <div class="chat-box" id="chatBox"></div>
 
-        <!-- Input Box Section -->
         <div class="input-wrapper">
-            <!-- File/Image Preview Chip -->
             <div class="file-preview-container" id="filePreviewContainer" style="display: none;"></div>
 
             <div class="input-box">
-                <!-- Hidden File Input -->
-                <input type="file" id="fileInput" onchange="handleFileSelect(event)" accept="image/*,.txt,.js,.py,.html,.css,.json,.csv,.md" style="display: none;">
+                <input type="file" id="fileInput" onchange="handleFileSelect(event)" accept="image/*,.pdf,.docx,.pptx,.txt,.js,.py,.html,.css,.json,.csv,.md" style="display: none;">
                 
                 <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach image or file">
                     <i class="fa-solid fa-paperclip"></i>
