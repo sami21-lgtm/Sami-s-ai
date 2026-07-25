@@ -56,7 +56,9 @@ async function handleFileSelect(event) {
                     const canvas = document.createElement("canvas");
                     let width = img.width;
                     let height = img.height;
-                    const maxDim = 1024;
+                    
+                    // টোকেন কমানোর জন্য maxDim এবং Quality অপটিমাইজ করা হয়েছে
+                    const maxDim = 512; 
 
                     if (width > maxDim || height > maxDim) {
                         if (width > height) {
@@ -73,7 +75,8 @@ async function handleFileSelect(event) {
                     const ctx = canvas.getContext("2d");
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.8);
+                    // 0.5 Quality দিলে ছবির সাইজ ও টোকেন লিমিট অনেক কমে যায়
+                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.5);
 
                     attachedFile = {
                         type: "image",
@@ -226,7 +229,7 @@ async function sendMessage(customText = null) {
         if (attachedFile.type === "image") {
             hasImage = true;
             apiMessageContent = [
-                { type: "text", text: text || "Analyze this image in detail and describe what you see." },
+                { type: "text", text: text || "Analyze this image in detail and solve all questions shown in it." },
                 { type: "image_url", image_url: { url: attachedFile.data } }
             ];
             userMessageContent = { text: text, img: attachedFile.data };
