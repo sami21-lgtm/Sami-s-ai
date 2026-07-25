@@ -226,7 +226,7 @@ async function sendMessage(customText = null) {
         if (attachedFile.type === "image") {
             hasImage = true;
             apiMessageContent = [
-                { type: "text", text: text || "Analyze this image in detail and solve/describe what is shown." },
+                { type: "text", text: text || "Analyze this image in detail and describe what you see." },
                 { type: "image_url", image_url: { url: attachedFile.data } }
             ];
             userMessageContent = { text: text, img: attachedFile.data };
@@ -258,17 +258,18 @@ async function sendMessage(customText = null) {
 
         const data = await response.json();
 
-        if (data.choices && data.choices[0]) {
+        if (response.ok && data.choices && data.choices[0]) {
             const aiReply = data.choices[0].message.content;
             updateAiMessage(loadingDiv, aiReply);
             conversationHistory.push({ role: "assistant", content: aiReply });
             saveChatHistory();
         } else {
-            updateAiMessage(loadingDiv, "Response error. Please check your API setup.");
+            const errorDetails = data.error?.message || data.error || "Response error. Please check your API setup.";
+            updateAiMessage(loadingDiv, `⚠️ **API Error:** ${errorDetails}`);
         }
 
     } catch (error) {
-        updateAiMessage(loadingDiv, "Error connecting to server.");
+        updateAiMessage(loadingDiv, "⚠️ Error connecting to server.");
         console.error(error);
     }
 }
