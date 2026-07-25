@@ -11,8 +11,9 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: "Groq API Key set kora hoyni! Environment Variables e GROQ_API_KEY add korun." });
         }
 
+        // ছবি থাকলে Groq-এর অ্যাক্টিভ Vision Model 'qwen/qwen3.6-27b' ব্যবহার করবে
         const model = hasImage 
-            ? "llama-3.2-90b-vision-preview" 
+            ? "qwen/qwen3.6-27b" 
             : "llama-3.3-70b-versatile";
 
         const sanitizedMessages = messages.map(msg => {
