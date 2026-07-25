@@ -8,27 +8,31 @@ export default async function handler(req, res) {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) {
-            return res.status(500).json({ error: "Groq API Key set kora hoyni! Environment Variables e GROQ_API_KEY add korun." });
+            return res.status(500).json({ error: "Groq API Key missing!" });
         }
 
-        // ছবি থাকলে Groq-এর অ্যাক্টিভ Vision Model 'qwen/qwen3.6-27b' ব্যবহার করবে
         const model = hasImage 
             ? "qwen/qwen3.6-27b" 
             : "llama-3.3-70b-versatile";
 
-        const sanitizedMessages = messages.map(msg => {
-            if (!hasImage && Array.isArray(msg.content)) {
-                const textPart = msg.content
-                    .filter(item => item.type === "text")
-                    .map(item => item.text)
-                    .join(" ");
-                return {
-                    role: msg.role,
-                    content: textPart || "[Image Context]"
-                };
-            }
-            return msg;
-        });
+        let finalMessages = messages;
+
+        if (hasImage) {
+            const systemMsg = messages.find(m => m.role === 'system');
+            const lastMsg = messages[messages.length - 1];
+            finalMessages = systemMsg ? [systemMsg, lastMsg] : [lastMsg];
+        } else {
+            finalMessages = messages.map(msg => {
+                if (Array.isArray(msg.content)) {
+                    const textPart = msg.content
+                        .filter(item => item.type === "text")
+                        .map(item => item.text)
+                        .join(" ");
+                    return { role: msg.role, content: textPart || "[Image Context]" };
+                }
+                return msg;
+            });
+        }
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -38,7 +42,7 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
                 model: model,
-                messages: sanitizedMessages,
+                messages: finalMessages,
                 temperature: 0.7,
                 max_tokens: 1024
             })
@@ -47,7 +51,6 @@ export default async function handler(req, res) {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error("Groq API Error:", data);
             return res.status(response.status).json({
                 error: data.error?.message || "Groq API request failed",
                 details: data
@@ -57,10 +60,6 @@ export default async function handler(req, res) {
         return res.status(200).json(data);
 
     } catch (error) {
-        console.error("Server Error:", error);
-        return res.status(500).json({ 
-            error: "Internal Server Error", 
-            details: error.message 
-        });
+        return res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }
