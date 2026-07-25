@@ -12,7 +12,7 @@ export default async function handler(req, res) {
         }
 
         const model = hasImage 
-            ? "llama-3.2-11b-vision-instruct" 
+            ? "llama-3.2-90b-vision-preview" 
             : "llama-3.3-70b-versatile";
 
         const sanitizedMessages = messages.map(msg => {
