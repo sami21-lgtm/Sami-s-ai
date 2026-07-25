@@ -57,8 +57,8 @@ async function handleFileSelect(event) {
                     let width = img.width;
                     let height = img.height;
                     
-                    // টোকেন কমানোর জন্য maxDim এবং Quality অপটিমাইজ করা হয়েছে
-                    const maxDim = 512; 
+                    // রেজুলেশন বাড়িয়ে ৮০০ করা হয়েছে যেন লেখা স্পষ্ট থাকে
+                    const maxDim = 800; 
 
                     if (width > maxDim || height > maxDim) {
                         if (width > height) {
@@ -75,8 +75,8 @@ async function handleFileSelect(event) {
                     const ctx = canvas.getContext("2d");
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // 0.5 Quality দিলে ছবির সাইজ ও টোকেন লিমিট অনেক কমে যায়
-                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.5);
+                    // কোয়ালিটি 0.7 করা হয়েছে যেন ব্যালেন্স থাকে (স্পষ্টতা এবং সাইজ)
+                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
                     attachedFile = {
                         type: "image",
@@ -228,9 +228,10 @@ async function sendMessage(customText = null) {
     if (attachedFile) {
         if (attachedFile.type === "image") {
             hasImage = true;
-            // নতুন ডিফল্ট প্রম্পট এখানে সেট করা হয়েছে
+            // এআই-কে সঠিক এবং নির্ভুলভাবে উত্তর দেওয়ার কড়া নির্দেশ
+            const imageInstruction = "ছবিতে থাকা প্রশ্নগুলো আগে খুব মনোযোগ দিয়ে পড়ো। এরপর সবগুলো MCQ বা প্রশ্নের সঠিক উত্তর দাও। উত্তরের ফরম্যাট হবে: প্রথমে সঠিক অপশন (যেমন: ১. ক/a) এবং তারপর কেন এটি সঠিক তার একটি ছোট ও সহজ ব্যাখ্যা। যদি কোনো প্রশ্ন বুঝতে না পারো, তাহলে বানিয়ে বলবে না, সোজা বলে দেবে যে প্রশ্নটি অস্পষ্ট।";
             apiMessageContent = [
-                { type: "text", text: text || "ছবিতে থাকা সবগুলো MCQ বা প্রশ্নের সঠিক উত্তর দাও। উত্তরের ফরম্যাট হবে: প্রথমে সঠিক অপশন (যেমন: ১. ক/a) এবং তারপর কেন এটি সঠিক তার একটি ছোট ও সহজ ব্যাখ্যা। উত্তরগুলো সাজিয়ে সুন্দর করে লিখবে।" },
+                { type: "text", text: text || imageInstruction },
                 { type: "image_url", image_url: { url: attachedFile.data } }
             ];
             userMessageContent = { text: text, img: attachedFile.data };
