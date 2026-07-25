@@ -5,7 +5,7 @@ const systemPrompt = {
 
 let currentChatId = null;
 let conversationHistory = [];
-let attachedFile = null; // { type: 'image'|'text'|'document', data: '...', name: '...', ext: '...' }
+let attachedFile = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     renderHistoryList();
@@ -23,7 +23,6 @@ function handleEnter(event) {
     if (event.key === "Enter") sendMessage();
 }
 
-// 🌐 Dynamic CDN Script Loader Helper
 function loadScript(src) {
     return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${src}"]`)) {
@@ -38,7 +37,6 @@ function loadScript(src) {
     });
 }
 
-// 📎 File / Image / PDF / DOCX / PPTX Handling
 async function handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -49,21 +47,45 @@ async function handleFileSelect(event) {
     container.innerHTML = `<div class="file-chip"><i class="fa-solid fa-spinner fa-spin"></i> Reading ${file.name}...</div>`;
 
     try {
-        // 1. Image Files
         if (file.type.startsWith("image/")) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                attachedFile = {
-                    type: "image",
-                    data: e.target.result,
-                    name: file.name,
-                    ext: "img"
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 1024;
+
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL("image/jpeg", 0.8);
+
+                    attachedFile = {
+                        type: "image",
+                        data: compressedBase64,
+                        name: file.name,
+                        ext: "img"
+                    };
+                    showFilePreview();
                 };
-                showFilePreview();
             };
             reader.readAsDataURL(file);
         } 
-        // 2. PDF Files
         else if (fileName.endsWith(".pdf") || file.type === "application/pdf") {
             await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -87,7 +109,6 @@ async function handleFileSelect(event) {
             };
             showFilePreview();
         } 
-        // 3. Word Document (.docx)
         else if (fileName.endsWith(".docx")) {
             await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
             const arrayBuffer = await file.arrayBuffer();
@@ -101,7 +122,6 @@ async function handleFileSelect(event) {
             };
             showFilePreview();
         } 
-        // 4. PowerPoint Presentation (.pptx)
         else if (fileName.endsWith(".pptx")) {
             await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
             const arrayBuffer = await file.arrayBuffer();
@@ -129,7 +149,6 @@ async function handleFileSelect(event) {
             };
             showFilePreview();
         } 
-        // 5. Plain Text / Code / Other Documents
         else {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -186,7 +205,6 @@ function clearAttachedFile() {
     container.innerHTML = "";
 }
 
-// 📩 Send Message
 async function sendMessage(customText = null) {
     const userInput = document.getElementById("userInput");
     const text = customText || userInput.value.trim();
@@ -204,12 +222,11 @@ async function sendMessage(customText = null) {
     let apiMessageContent = text;
     let hasImage = false;
 
-    // Process attached file/image
     if (attachedFile) {
         if (attachedFile.type === "image") {
             hasImage = true;
             apiMessageContent = [
-                { type: "text", text: text || "Analyze this image in detail and describe what you see." },
+                { type: "text", text: text || "Analyze this image in detail and solve/describe what is shown." },
                 { type: "image_url", image_url: { url: attachedFile.data } }
             ];
             userMessageContent = { text: text, img: attachedFile.data };
@@ -220,13 +237,11 @@ async function sendMessage(customText = null) {
         }
     }
 
-    // Render User Message in Chat
     appendUserMessage(userMessageContent);
 
     userInput.value = "";
     clearAttachedFile();
 
-    // Store in API conversation array
     conversationHistory.push({ role: "user", content: apiMessageContent });
 
     const loadingDiv = appendLoadingState();
@@ -258,7 +273,6 @@ async function sendMessage(customText = null) {
     }
 }
 
-// UI Helpers
 function removeWelcomeScreen() {
     const welcome = document.querySelector(".welcome-screen");
     if (welcome) welcome.remove();
@@ -338,7 +352,6 @@ function appendLoadingState() {
 function updateAiMessage(element, text) {
     element.innerHTML = "";
     
-    // Check if 'marked' markdown parser is available
     if (window.marked) {
         element.innerHTML = marked.parse(text);
     } else {
@@ -375,7 +388,6 @@ function updateAiMessage(element, text) {
 function speak(text) {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        // Remove markdown tags for smoother speech
         const cleanText = text.replace(/[*_#`~]/g, '');
         const utterance = new SpeechSynthesisUtterance(cleanText);
         const isBangla = /[\u0980-\u09FF]/.test(cleanText);
@@ -385,7 +397,6 @@ function speak(text) {
     }
 }
 
-// Local Storage History System
 function saveChatHistory() {
     let allChats = JSON.parse(localStorage.getItem("sami_pro_chats") || "{}");
     
