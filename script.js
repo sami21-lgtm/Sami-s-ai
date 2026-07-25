@@ -228,8 +228,9 @@ async function sendMessage(customText = null) {
     if (attachedFile) {
         if (attachedFile.type === "image") {
             hasImage = true;
+            // নতুন ডিফল্ট প্রম্পট এখানে সেট করা হয়েছে
             apiMessageContent = [
-                { type: "text", text: text || "Analyze this image in detail and solve all questions shown in it." },
+                { type: "text", text: text || "ছবিতে থাকা সবগুলো MCQ বা প্রশ্নের সঠিক উত্তর দাও। উত্তরের ফরম্যাট হবে: প্রথমে সঠিক অপশন (যেমন: ১. ক/a) এবং তারপর কেন এটি সঠিক তার একটি ছোট ও সহজ ব্যাখ্যা। উত্তরগুলো সাজিয়ে সুন্দর করে লিখবে।" },
                 { type: "image_url", image_url: { url: attachedFile.data } }
             ];
             userMessageContent = { text: text, img: attachedFile.data };
